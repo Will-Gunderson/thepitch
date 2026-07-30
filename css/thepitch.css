@@ -6502,7 +6502,10 @@ figcaption {
   font-display: swap;
 }
 
-/* --- Promo bar dropdown: collapsed by default to prevent load flash (toggled by js/promo-bar.js) --- */
-.promo-bar-dropdown { height: 0; overflow: hidden; transition: height .4s ease; }
-.promo-dropdown-svg { transition: transform .3s ease; }
+/* --- Promo bar dropdown: collapsed by default (no load flash); smooth toggle via js/promo-bar.js --- */
+.promo-bar-dropdown { height: 0; overflow: hidden; transition: height .5s cubic-bezier(0.4, 0, 0.2, 1); will-change: height; }
+.promo-dropdown-svg { transition: transform .4s cubic-bezier(0.4, 0, 0.2, 1); }
 .promo-bar.promo-open .promo-dropdown-svg { transform: rotate(180deg); }
+.close-promo-wrapper { cursor: pointer; }
+/* Promo headline: Sulsans bold to match design (base body font is Open Sauce One) */
+.promo-info .paragraph-2, .promo-info .paragraph-2 strong { font-family: Sulsans, sans-serif; font-weight: 700; }
