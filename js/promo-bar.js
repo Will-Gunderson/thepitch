@@ -1,20 +1,32 @@
 /* The Pitch - promo bar dropdown.
    Replaces the Webflow interaction: panel starts collapsed (no load flash),
-   toggles on the bar, closes via the X, with a smooth height animation. */
+   toggles on the bar, closes via the X, with a smooth height animation.
+   Height is measured from the real auto layout (accurate for the desktop
+   flex-row layout, where scrollHeight on a collapsed row is unreliable). */
 (function () {
+  function naturalHeight(dd) {
+    var prev = dd.style.height;
+    dd.style.transition = 'none';   // no animation while measuring
+    dd.style.height = 'auto';
+    var h = dd.offsetHeight;        // true laid-out height
+    dd.style.height = prev || '0px';
+    dd.getBoundingClientRect();     // commit start height
+    dd.style.transition = '';       // restore CSS transition
+    return h;
+  }
   function open(bar, dd) {
     bar.classList.add('promo-open');
-    dd.style.height = dd.scrollHeight + 'px';
+    dd.style.height = naturalHeight(dd) + 'px';
     dd.addEventListener('transitionend', function te(e) {
       if (e.propertyName === 'height') {
-        dd.style.height = 'auto';           // allow responsive reflow while open
+        dd.style.height = 'auto';   // allow responsive reflow while open
         dd.removeEventListener('transitionend', te);
       }
     });
   }
   function close(bar, dd) {
-    dd.style.height = dd.scrollHeight + 'px';
-    dd.getBoundingClientRect();             // force reflow so the collapse animates
+    dd.style.height = dd.offsetHeight + 'px';  // current real height
+    dd.getBoundingClientRect();                // commit before collapsing
     dd.style.height = '0px';
     bar.classList.remove('promo-open');
   }
