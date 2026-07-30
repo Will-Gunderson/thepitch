@@ -1,0 +1,9 @@
+# Files Cloudflare should NOT upload/serve
+.git
+.gitignore
+.assetsignore
+node_modules
+wrangler.jsonc
+wrangler.toml
+*.log
+.DS_Store
