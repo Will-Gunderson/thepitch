@@ -2,6 +2,20 @@
 <html data-wf-page="6090376b059225cfd240cb13" data-wf-site="607734d2247298661c7b015a" lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- Google Consent Mode v2 defaults (must run before Google tags load) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    (function(){
+      var granted = false;
+      try { granted = localStorage.getItem('pitch-cookie-consent') === 'granted'; } catch(e){}
+      var v = granted ? 'granted' : 'denied';
+      gtag('consent', 'default', {
+        ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v,
+        functionality_storage: 'granted', security_storage: 'granted', wait_for_update: 500
+      });
+    })();
+  </script>
   <title>Terms-Conditions</title>
   <meta content="Studios, 1-Bed, 2-Beds" name="description">
   <meta content="Terms-Conditions" property="og:title">
@@ -239,5 +253,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <!--  Google Tag Manager (noscript)  -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TQT627Q" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!--  End Google Tag Manager (noscript)  -->
+  <script src="js/cookie-consent.js"></script>
 </body>
 </html>

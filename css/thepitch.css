@@ -6514,3 +6514,31 @@ figcaption {
 /* --- Promo bar: hidden until content is loaded by js/promo-content.js (prevents flash) --- */
 .promo-bar { visibility: hidden; }
 .promo-bar.promo-ready { visibility: visible; }
+
+
+/* --- Cookie consent banner (brand-styled) --- */
+.cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2000;
+  background: var(--light); border-top: 1px solid var(--border-dark);
+  box-shadow: 0 -6px 28px rgba(8,38,42,.10);
+  transform: translateY(100%); transition: transform .4s cubic-bezier(0.4,0,0.2,1); }
+.cookie-banner.cookie-show { transform: translateY(0); }
+.cookie-banner-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center;
+  gap: 2rem; padding: 1.25rem 2rem; }
+.cookie-banner-text { flex: 1 1 auto; }
+.cookie-banner-title { font-family: Sulsans, sans-serif; font-weight: 700; color: var(--primary-1);
+  font-size: 1.5rem; line-height: 1.2; margin: 0 0 .4rem; }
+.cookie-banner-body { font-family: 'Open Sauce One', sans-serif; color: var(--dark);
+  font-size: .9rem; line-height: 1.55; margin: 0; max-width: 90ch; }
+.cookie-banner-actions { flex: 0 0 auto; display: flex; gap: 1rem; }
+.cookie-btn { font-family: Sulsans, sans-serif; font-weight: 700; font-size: .95rem; cursor: pointer;
+  border-radius: 999px; padding: .85rem 1.75rem; white-space: nowrap;
+  transition: background-color .2s, color .2s, box-shadow .2s; }
+.cookie-btn-reject { background: transparent; color: var(--primary-1); border: 2px solid var(--primary-1); }
+.cookie-btn-reject:hover { background: var(--primary-1); color: var(--white); }
+.cookie-btn-accept { background: var(--primary-2); color: var(--white); border: 2px solid var(--primary-2); }
+.cookie-btn-accept:hover { box-shadow: inset 0 0 20px 200px rgba(0,0,0,.12); }
+@media (max-width: 767px) {
+  .cookie-banner-inner { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem; }
+  .cookie-banner-actions { width: 100%; }
+  .cookie-btn { flex: 1 1 0; text-align: center; padding: .85rem 1rem; }
+}

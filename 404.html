@@ -2,6 +2,20 @@
 <html data-wf-page="607734d2247298ccba7b01be" data-wf-site="607734d2247298661c7b015a" lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- Google Consent Mode v2 defaults (must run before Google tags load) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    (function(){
+      var granted = false;
+      try { granted = localStorage.getItem('pitch-cookie-consent') === 'granted'; } catch(e){}
+      var v = granted ? 'granted' : 'denied';
+      gtag('consent', 'default', {
+        ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v,
+        functionality_storage: 'granted', security_storage: 'granted', wait_for_update: 500
+      });
+    })();
+  </script>
   <title>Not Found</title>
   <meta content="Not Found" property="og:title">
   <meta content="Not Found" name="twitter:title">
@@ -77,5 +91,6 @@ body {
     });
   });
 </script>
+  <script src="js/cookie-consent.js"></script>
 </body>
 </html>
