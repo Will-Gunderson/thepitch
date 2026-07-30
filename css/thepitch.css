@@ -6542,3 +6542,8 @@ figcaption {
   .cookie-banner-actions { width: 100%; }
   .cookie-btn { flex: 1 1 0; text-align: center; padding: .85rem 1rem; }
 }
+
+
+/* --- Discreet footer link to the promo editor (Pages CMS) --- */
+.admin-link { color: inherit; font: inherit; font-weight: 500; text-decoration: underline; }
+.admin-link:hover { opacity: .7; }
