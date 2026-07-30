@@ -6501,3 +6501,8 @@ figcaption {
   font-style: normal;
   font-display: swap;
 }
+
+/* --- Promo bar dropdown: collapsed by default to prevent load flash (toggled by js/promo-bar.js) --- */
+.promo-bar-dropdown { height: 0; overflow: hidden; transition: height .4s ease; }
+.promo-dropdown-svg { transition: transform .3s ease; }
+.promo-bar.promo-open .promo-dropdown-svg { transform: rotate(180deg); }
