@@ -1,0 +1,28 @@
+# Pages CMS configuration (https://pagescms.org)
+media:
+  input: images
+  output: /images
+
+content:
+  - name: promo
+    label: Promo Bar
+    type: file
+    path: content/promo.json
+    format: json
+    fields:
+      - name: enabled
+        label: Show the promo bar
+        type: boolean
+      - name: headline
+        label: Top bar headline
+        type: string
+      - name: dropdown_heading
+        label: Dropdown text (put a line break to split into two lines)
+        type: text
+      - name: bullets
+        label: Bullet points
+        type: string
+        list: true
+      - name: cta_label
+        label: Button label
+        type: string

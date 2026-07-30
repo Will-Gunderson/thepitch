@@ -6509,3 +6509,8 @@ figcaption {
 .close-promo-wrapper { cursor: pointer; }
 /* Promo headline: Sulsans bold to match design (base body font is Open Sauce One) */
 .promo-info .paragraph-2, .promo-info .paragraph-2 strong { font-family: Sulsans, sans-serif; font-weight: 700; }
+
+
+/* --- Promo bar: hidden until content is loaded by js/promo-content.js (prevents flash) --- */
+.promo-bar { visibility: hidden; }
+.promo-bar.promo-ready { visibility: visible; }
