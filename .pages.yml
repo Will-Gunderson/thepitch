@@ -1,13 +1,16 @@
 # Pages CMS configuration (https://pagescms.org)
+# Paths are repo-relative. Static assets live under public/ so Astro copies them
+# to the site root at build time, which is why input is public/images while the
+# public URL (output) stays /images. Keep these in step if the layout moves.
 media:
-  input: images
+  input: public/images
   output: /images
 
 content:
   - name: promo
     label: Promo Bar
     type: file
-    path: content/promo.json
+    path: public/content/promo.json
     format: json
     fields:
       - name: enabled

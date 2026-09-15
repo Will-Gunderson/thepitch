@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+// Body is the Webflow export's markup, held verbatim in src/content/floor-plans.html and
+// injected with set:html. It is NOT inlined as Astro markup on purpose: Webflow nests
+// <script class="w-json"> (lightbox config) inside <a class="w-lightbox">, and Astro's
+// parser treats the <a> as an unclosed formatting element and reconstructs it around
+// everything that follows — on amenities that turned 18 anchors into 157 and wrecked
+// the DOM. set:html keeps the bytes as Webflow wrote them.
+import body from '../content/floor-plans.html?raw';
+---
+<Base title="Floor Plans" description="Studios, 1-Bed, 2-Beds" wfPage="60ff8746637c1877a20d4d71" current="floor-plans" backToTopFirst={false}>
+  <Fragment set:html={body} />
+</Base>

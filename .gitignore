@@ -5,3 +5,15 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# Dependencies
+node_modules/
+
+# Build output — dist.nosync, not dist: the vault is in iCloud and a folder
+# rewritten on every build turns into conflict copies. See the vault CLAUDE.md.
+dist/
+dist.nosync/
+.astro/
+
+# Wrangler local cache (contains account details)
+.wrangler/
