@@ -91,10 +91,55 @@ about **2.5 MB** on first paint. What got it there, and what not to undo:
   CloudFront copy (verified against the integrity hash the export shipped). One fewer
   origin handshake, and it inherits the `_headers` TTL.
 - **The YouTube embed and the promo image are lazy.** The iframe had no `loading` at all.
-- Still outstanding: `thepitch.js` is 263 KB of unminified Webflow runtime and jQuery is
-  89 KB — ~100 KB brotli of JS to drive a nav dropdown, a slider and a back-to-top
-  button. Removing it is a rewrite of the interactions, not a tweak. EliseAI's chat
-  bundle is another 1.0 MB and is now the single largest item on the page.
+
+## Sliders have one fixed slide height
+
+Slide height used to follow its contents, so advancing a slider moved the card's bottom
+edge. Three causes, all fixed in thepitch.css:
+
+- **Every slide photo is boxed at 3:2 and cropped to fill** (`aspect-ratio` +
+  `object-fit: cover`). The library runs 1.489–1.555 except Pitch_010v2 at 1.888, so the
+  crop is a few percent on all but that one. **These selectors are scoped to `.w-slide`
+  deliberately** — the amenities lightbox includes a portrait image (Pitch_009,
+  801×1200) that must keep its own shape. Don't widen them.
+- **Where copy drives height, lines are reserved rather than truncated**: three lines for
+  `.slide-caption .small-text`, two for `.slider .text-block-10`, and a floor on
+  `.card-body`. Each is keyed to that element's own line-height — keep them in step if
+  the type changes. Only needed below 768px for the first two, because `.slide-caption`
+  and `.slider-overlay-box` both drop out of absolute positioning there.
+- Four walkthrough links in `floor-plans.html` were missing the `.lightbox-link` class
+  the other nine carry (it is `padding-bottom: 15px`), which made two of the four unit
+  sliders 15px shorter. All 13 now match.
+
+Verified spread 0 on all nine sliders at 320/375/414/600/700/767/768/900/1181/1440px,
+and the sliders now match each other too. If you change slider imagery or captions,
+re-measure: `[...document.querySelectorAll('.slider')].map(s=>{const h=[...s.querySelectorAll('.w-slide')].map(x=>Math.round(x.getBoundingClientRect().height));return Math.max(...h)-Math.min(...h)})`
+should be all zeros.
+- **The EliseAI chat bundle loads after the page, not with it.** It is ~1 MB and used to
+  be a static `import`, starting at ~90 ms and competing with the hero video and LCP
+  image; it now loads on the first of any user interaction, the `load` event, or a 2.5 s
+  fallback (measured on production: it now starts at 363 ms, exactly `loadEventEnd`).
+  The `[eliseai]` buttons are wired **before** the bundle arrives and a click that lands
+  early is queued and replayed — don't "simplify" that back into wiring-after-import,
+  which silently dropped such clicks. Verified on production that the Schedule-a-Tour
+  modal still opens; note it renders into a shadow root and adds no new body nodes, so
+  a DOM-diff probe will wrongly report nothing happened. Screenshot instead.
+
+## Why the Webflow runtime is still here
+
+`thepitch.js` (263 KB) + jQuery (89 KB) is ~89 KB brotli, and it is the last big JS on
+the page — but it is not low-hanging fruit, and two things rule out the easy options:
+
+- **Minifying is pointless.** It is already minified; the bulk is the IX2 interaction
+  payload, not code. Measured: brotli 58,707 → 58,638 bytes, 0.1%.
+- **It drives five separate subsystems**: 9 sliders, 32 lightboxes (including 13
+  Matterport walkthrough embeds), the responsive nav, the background video, and **65 IX2
+  interactions with 235 actions** — 66 of them opacity animations and 9 scroll-into-view
+  triggers. Sections like `.section-contents` sit at `opacity: 0` until IX2 reveals them,
+  so dropping the runtime without replacing those animations leaves content invisible.
+
+So removing it is a rewrite of the interaction layer on a live leasing site, for ~89 KB.
+Scope it deliberately if it is ever worth doing; it is not an incremental tweak.
 
 ## SEO
 
