@@ -305,30 +305,55 @@ body {
   <script is:inline src="/js/thepitch.js" type="text/javascript"></script>
   <!--  MeetElise Chat + AI Buttons  -->
   <script type="module" is:inline>
-  import Chat from 'https://cdn.eliseai.com/@meetelise/chat';
-  // Start MeetElise chat:
-  Chat.start({
-    organization: '32694095-7227-4a41-9d84-187e71bdb1e6'
-  });
-  // Wire up eliseAI buttons after the DOM is ready
-  document.addEventListener('DOMContentLoaded', function() {
-    // For [eliseAI="onOpenSST"]
-    document.querySelectorAll('[eliseAI="onOpenSST"]').forEach(function(element) {
-      element.addEventListener('click', function() {
-        if (window.eliseAi && typeof window.eliseAi.onOpenSST === 'function') {
-          window.eliseAi.onOpenSST();
-        }
-      });
+  /* The chat bundle is ~1MB and used to be a static import, so it started downloading
+     at ~90ms — in the middle of the critical path, competing with the hero video and
+     the LCP image. It now loads on the first of: any user interaction, the load event,
+     or a 2.5s fallback. Nothing on the page needs it before one of those happens.
+
+     Buttons are wired straight away rather than after the bundle resolves, and a click
+     that lands before the widget is up is remembered and replayed. That is strictly
+     better than the old behaviour, where such a click hit the `typeof ... === 'function'`
+     guard and silently did nothing.
+
+     Selector note: `[eliseai]` matches whatever case the export authored (HTML attribute
+     names are case-insensitive) and covers every action, not just the two that were
+     hardcoded — the live widget also exposes onOpenChat and onOpenCallUsWindow. */
+  const ORG = '32694095-7227-4a41-9d84-187e71bdb1e6';
+  let pending = null;
+
+  const ready = (fn) => window.eliseAi && typeof window.eliseAi[fn] === 'function';
+
+  for (const el of document.querySelectorAll('[eliseai]')) {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const fn = el.getAttribute('eliseai');
+      if (ready(fn)) window.eliseAi[fn]();
+      else { pending = fn; kick(); }
     });
-    // For [eliseAI="onOpenEmailUsWindow"]
-    document.querySelectorAll('[eliseAI="onOpenEmailUsWindow"]').forEach(function(element) {
-      element.addEventListener('click', function() {
-        if (window.eliseAi && typeof window.eliseAi.onOpenEmailUsWindow === 'function') {
-          window.eliseAi.onOpenEmailUsWindow();
-        }
-      });
-    });
-  });
+  }
+
+  async function start() {
+    try {
+      const m = await import('https://cdn.eliseai.com/@meetelise/chat');
+      (m.default ?? m).start({ organization: ORG });
+    } catch {
+      return; // domain-locked hosts (localhost, previews) fail here; see CLAUDE.md
+    }
+    // window.eliseAi appears a moment after start(), so replay a queued click once it does.
+    let tries = 0;
+    const t = setInterval(() => {
+      if (pending && ready(pending)) { const fn = pending; pending = null; window.eliseAi[fn](); }
+      if (!pending || ++tries > 100) clearInterval(t);
+    }, 100);
+  }
+
+  let started = false;
+  function kick() { if (!started) { started = true; start(); } }
+
+  addEventListener('load', kick, { once: true });
+  setTimeout(kick, 2500);
+  for (const ev of ['pointerdown', 'keydown', 'touchstart', 'scroll'])
+    addEventListener(ev, kick, { once: true, passive: true });
 </script>
   <!--  Google Tag Manager (noscript)  -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5MW9Q9P" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
