@@ -1,11 +1,10 @@
 {
   "enabled": true,
-  "headline": "Sweet summer savings - 1 month free + a little extra!",
-  "dropdown_heading": "Hot days. Cool savings.\nReceive 1 month free when you sign a 13-month lease or longer on any vacant alcove-style home!",
+  "headline": "One Last Summer Steal - Up to 6 Weeks Free!",
+  "dropdown_heading": "Summer may be winding down, but the savings at The Pitch are still going strong! Receive SIX WEEKS FREE on an 18-month lease or longer on select homes.\n\nYour next home is waiting - make your move before this end-of-summer special slips away!\n",
   "bullets": [
-    "Also, apply within 24 hours of your tour and receive a $500 rent credit when you move in by August 15th!",
-    "Advertised rents reflect the average monthly cost over the full lease term, including the current concession.",
-    "Contact our leasing team to schedule your private tour today!"
+    "The rents displayed include the current rent special and reflect the average monthly cost over the term of your lease.",
+    "Contact out leasing team to schedule your private tour today!"
   ],
   "cta_label": "Schedule a tour"
 }
