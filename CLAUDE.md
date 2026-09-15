@@ -172,6 +172,25 @@ Scope it deliberately if it is ever worth doing; it is not an incremental tweak.
   states. Geo coordinates and Saturday's "by appointment only" are deliberately omitted
   rather than invented — add coordinates only from a real source.
 
+## The unit-amenity badges are shared, not duplicated
+
+`src/content/_unit-amenity-badges.html` holds the 13 badges and is injected into both
+`amenities.astro` and `floor-plans.astro` at the `<!--UNIT_AMENITY_BADGES-->` marker.
+
+Why: Webflow exported this as a CMS collection list, and the binding came out **populated
+on amenities and empty on floor-plans** — one placeholder item plus a `w-dyn-empty`
+"No items found." block. So from the initial commit until Sep 15, 2026 the Unit Amenities
+section on /floor-plans rendered its heading and intro line with **no badges at all**.
+Not a conversion regression; check `git show be26c6b:floor-plans.html` if in doubt.
+
+Each page keeps its own section wrapper — floor-plans renders it on `bg-dark` with a
+`light` heading, amenities on light with `dark` — so only the badges are shared.
+`.collection-list-2` and `.collection-list-3` resolve to the same CSS rule, so the
+differing wrapper class is cosmetic. To edit a badge, edit the partial once.
+
+**That file is imported `?raw` and injected verbatim, so anything in it ships to
+visitors** — keep comments in it to one line rather than explaining things there.
+
 ## Gotchas
 
 - **Never inline the Webflow body markup as Astro markup.** Webflow nests

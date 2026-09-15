@@ -6,7 +6,13 @@ import Base from '../layouts/Base.astro';
 // parser treats the <a> as an unclosed formatting element and reconstructs it around
 // everything that follows — on amenities that turned 18 anchors into 157 and wrecked
 // the DOM. set:html keeps the bytes as Webflow wrote them.
-import body from '../content/floor-plans.html?raw';
+import rawBody from '../content/floor-plans.html?raw';
+// The unit-amenity badges live in one file and are injected into both the pages that
+// show them. Webflow exported this CMS collection populated on amenities and empty on
+// floor-plans, which is why the floor plans page had the heading and intro line but no
+// badges at all. Sharing the markup means that can't happen again.
+import badges from '../content/_unit-amenity-badges.html?raw';
+const body = rawBody.replace('<!--UNIT_AMENITY_BADGES-->', badges);
 ---
 <Base title="Floor Plans & Availability | The Pitch Apartments, St. Paul" description="Browse studio, alcove, one-bedroom and two-bedroom floor plans at The Pitch in St. Paul's Midway neighborhood, with current availability and pricing." wfPage="60ff8746637c1877a20d4d71" current="floor-plans" backToTopFirst={false}>
   <Fragment set:html={body} />
