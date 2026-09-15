@@ -1,0 +1,43 @@
+# Browser cache policy for static assets.
+#
+# Without this file, Workers Assets serves everything as
+# `cache-control: public, max-age=0, must-revalidate`, so every internal navigation
+# re-validates the whole asset set — measured at 58 requests on the homepage — paying a
+# round trip per file for a 304. That is the single largest source of dead time on the
+# site after image weight.
+#
+# TTLs are deliberately uneven, because none of these filenames are content-hashed:
+# a long TTL on a file whose name can be reused pins stale content in browsers that
+# already have it. So the aggressive settings go only where a name genuinely implies
+# fixed bytes.
+
+# Font binaries never change under a given name — the only safe `immutable` here.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Photography and video: long enough to make repeat visits and cross-page navigation
+# free, short enough that replacing a file under the same name self-corrects in a week.
+/images/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
+
+/videos/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
+
+# CSS and JS do change on redeploys and are NOT fingerprinted, so they get a short
+# fresh window plus stale-while-revalidate: instant loads, and an edit still reaches
+# returning visitors within minutes instead of a day.
+# If these ever move into Astro's bundling (and get hashed names), raise this to a year.
+/css/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+/js/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+
+# The promo bar's content must never be served stale — promo-content.js re-fetches this
+# specifically to pick up a CMS edit that landed after the last build.
+/content/promo.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Keep preview deployments out of search results; only the custom domain should index.
+https://:version.:subdomain.workers.dev/*
+  X-Robots-Tag: noindex

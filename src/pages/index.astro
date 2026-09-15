@@ -8,14 +8,11 @@ import Base from '../layouts/Base.astro';
 // the DOM. set:html keeps the bytes as Webflow wrote them.
 import body from '../content/index.html?raw';
 ---
-<Base title="The Pitch - St. Paul Apartments" description="Studios, Alcoves, 1-Bedrooms, 2-Bedrooms. Opening this September 2021." wfPage="610013856a7de79eb26b085b" current="home" navVariant="overlay" bodyClass="body" showSearchModal={false}>
+<Base title="The Pitch - St. Paul Apartments" description="Studio, alcove, one- and two-bedroom apartments in the Midway neighborhood of St. Paul, across from Allianz Field. Schedule a tour of The Pitch today." wfPage="610013856a7de79eb26b085b" current="home" navVariant="overlay" bodyClass="body">
   <Fragment slot="head">
-    <meta content="The Pitch - St. Paul Apartments" property="og:title">
-    <meta content="Studios, Alcoves, 1-Bedrooms, 2-Bedrooms. Opening this September 2021." property="og:description">
-    <meta content="The Pitch - St. Paul Apartments" name="twitter:title">
-    <meta content="Studios, Alcoves, 1-Bedrooms, 2-Bedrooms. Opening this September 2021." name="twitter:description">
-    <meta property="og:type" content="website">
-    <meta content="summary_large_image" name="twitter:card">
+    {/* og:/twitter: tags moved into Base.astro so all eight pages get them — they only
+        ever rendered here, and still carried "Opening this September 2021". Only the
+        Search Console token is genuinely homepage-only. */}
     <meta content="W6kf_OST5fcmGQV6oZpcya0g0Ts1AjUc8nv4ndMG480" name="google-site-verification">
   </Fragment>
   <Fragment set:html={body} />

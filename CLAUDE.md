@@ -5,8 +5,10 @@ Yellow Tree; tours and chat run through EliseAI.
 
 - **Live URL:** https://www.thepitchstp.com
 - **Stack:** Astro 5, static output, from a Webflow export
-- **Status:** converted from flat HTML to Astro on the `astro-conversion` branch —
-  **not merged**, see *Deploy* below
+- **Status:** the Astro conversion is on `main`, pushed, and live — the Workers Build on
+  `c2f59ac` succeeded, so the dashboard build command is already right. (An earlier note
+  here said this sat unmerged on an `astro-conversion` branch; that was wrong.) A
+  performance + SEO pass has since landed on top — see *Performance* and *SEO* below.
 
 ## Commands
 
@@ -26,6 +28,7 @@ src/content/*.html    the Webflow body markup, verbatim
 src/layouts/Base.astro  head, promo bar, navbar, scripts
 src/components/Footer.astro
 public/               css, js, fonts, images, videos, content/promo.json
+public/_headers       browser cache policy — see Performance
 .pages.yml            Pages CMS config
 ```
 
@@ -54,6 +57,75 @@ Workers Builds deploys on the CMS commit, so that window is about a minute.
 If the file moves, update `path:` in `.pages.yml` **and** the fetch URL in
 `promo-content.js`. `media.input` in `.pages.yml` is `public/images` (repo path) while
 `output` is `/images` (public URL) — they are different on purpose.
+
+## Performance
+
+The homepage was **14.0 MB over 58 requests** measured against production; it is now
+about **2.5 MB** on first paint. What got it there, and what not to undo:
+
+- **Images must carry `srcset`.** Three slider cards were requesting 2.2–3.0 MB
+  originals to render at 400×259 — the `-p-500/800/1080` variants were already in the
+  repo, unused. `sizes="(max-width: 479px) 87vw, 400px"` is measured, not guessed: the
+  card is 87vw on a phone and pinned at 400px above ~460px wide.
+- **`img { height: auto }` in thepitch.css is load-bearing.** `components.css` sets
+  `max-width: 100%` but never `height: auto`, so an HTML `height` attribute applies
+  literally — adding width/height for CLS protection stretched a card to 400×1621 until
+  this rule went in. Don't remove it while any img has width/height.
+- **`public/_headers` carries the cache policy.** Without it Workers Assets serves
+  everything `max-age=0, must-revalidate`, so every navigation re-validates ~40 files.
+  TTLs are deliberately uneven because **none of these filenames are content-hashed**:
+  a year on `/fonts/*` (font bytes never change under a name), a week on images/video,
+  five minutes plus `stale-while-revalidate` on css/js because those do change on
+  redeploy. If css/js ever move into Astro's bundling and get hashed names, raise them.
+  `/content/promo.json` is pinned to no-cache on purpose — the promo fetch depends on it.
+- **Fonts are woff2 only.** The export shipped seven `.otf` plus one `.woff` (422 KB);
+  the same faces are 176 KB as woff2. Every face is `font-display: swap` — Optician Sans
+  was `auto`, which Chrome treats as `block`, blanking display headings for up to 3s.
+  The eight `@font-face` blocks were also duplicated verbatim in the file; one set now.
+- **The hero video is re-encoded, not just re-pointed.** 3.0 MB → 1.35 MB (h264 CRF 28,
+  SSIM 0.98 against the original). The VP9 webm came out *larger* than the h264, so
+  there is one mp4 source and no webm. It has a real `poster` attribute now; the export
+  set the poster as an inline `background-image`, invisible to the preload scanner.
+  Don't add `preload="none"` — `autoplay` overrides it, and the re-encode was the fix.
+- **jQuery is self-hosted** at `/js/jquery-3.5.1.min.js`, byte-identical to Webflow's
+  CloudFront copy (verified against the integrity hash the export shipped). One fewer
+  origin handshake, and it inherits the `_headers` TTL.
+- **The YouTube embed and the promo image are lazy.** The iframe had no `loading` at all.
+- Still outstanding: `thepitch.js` is 263 KB of unminified Webflow runtime and jQuery is
+  89 KB — ~100 KB brotli of JS to drive a nav dropdown, a slider and a back-to-top
+  button. Removing it is a rewrite of the interactions, not a tweak. EliseAI's chat
+  bundle is another 1.0 MB and is now the single largest item on the page.
+
+## SEO
+
+- **`Base.astro` owns canonical, og: and twitter: for every page.** They previously
+  rendered only on the homepage via index.astro's head slot, so interior pages shared as
+  a bare URL, and the `summary_large_image` card had no image. Only the Search Console
+  verification token is still homepage-only.
+- **Titles and descriptions are unique per page.** Home and amenities used to share the
+  identical title; six pages shared the description "Studios, 1-Bed, 2-Beds"; the
+  homepage advertised "Opening this September 2021" in its description and og: tags.
+- **`@astrojs/sitemap` emits `sitemap-index.xml`**, filtering out `/404`. Webflow used
+  to generate a sitemap and the migration dropped it, so `/sitemap.xml` had been 404ing.
+  **The live `robots.txt` is Cloudflare-managed, not served from this repo, and carries
+  no `Sitemap:` line** — so the sitemap has to be submitted in Search Console directly.
+- **Every page has exactly one h1.** amenities, floor-plans, contact and neighborhood had
+  none (amenities started at h4; contact and neighborhood had no heading at all), while
+  home had five and gallery three. The four missing ones are `.sr-only` — their comps
+  carry no visible page title, so the heading exists for crawlers and screen readers
+  without touching the design. Swapping heading levels is visually safe here because
+  `.display-heading` / `.large-heading` / `.medium-heading` each override font-size,
+  weight, line-height and margin-bottom, and thepitch.css sets `margin-top: 0` on h1–h4
+  alike. `thepitch.js` only ever selects those classes, never a tag-qualified form.
+- **One phone number.** The export had four, two of them crossed: the navbar showed
+  (651) 412-7725 while dialling +1 877 660 3959, and a second link showed (877) 660-3959
+  while dialling +1 651 447 4150. `PHONE_DISPLAY` / `PHONE_HREF` in Base.astro are the
+  single source. **Will confirmed on Sep 15, 2026 that (877) 660-3959 is the correct
+  number**, so the three (651) variants in the export were stale, not call-tracking
+  lines. Change it in Base.astro only — nothing else should hardcode a phone number.
+- **JSON-LD `ApartmentComplex`** in Base.astro, built only from what the footer already
+  states. Geo coordinates and Saturday's "by appointment only" are deliberately omitted
+  rather than invented — add coordinates only from a real source.
 
 ## Gotchas
 
@@ -91,6 +163,24 @@ If the file moves, update `path:` in `.pages.yml` **and** the fetch URL in
 - `terms-conditions` and `404` now also load `promo-content.js` / `promo-bar.js`, which
   the old export didn't ship there. Both return early when `.promo-bar` is absent, so
   they're inert; the alternative was two more props for no behavioural gain.
+- **The GTM container loader is easy to lose.** The conversion dropped the `GTM-TQT627Q`
+  bootstrap from `<head>` but kept its `<noscript>` iframe at the end of `<body>`, so
+  the container stopped loading for every JS-enabled visitor while still *looking*
+  installed in the page source. It's restored in Base.astro. That container loads a
+  Meta Pixel — ~743 KB — which is why the page got heavier once it worked again.
+  `GTM-5MW9Q9P` has only ever had a noscript iframe here; it's presumably fired as a
+  nested tag from TQT627Q. If you audit tags, check that assumption before deleting it.
+- **`floor-plans` renders its plan cards behind a third-party widget**
+  (`sightmap.com/embed/...`) and, like EliseAI, it doesn't resolve on localhost — the
+  page shows a spinner and all 13 plan images measure 0×0. On production all 13 are
+  visible. Don't read a local spinner as a regression.
+- **The amenities lightbox used to load 10 images from Webflow's CDN**
+  (`cdn.prod.website-files.com`) — they were never downloaded during the migration, so
+  cancelling the Webflow subscription would have broken them. They're local now, and
+  `website-files.com` appears nowhere in the repo. Keep it that way.
+- **iCloud conflict copies can reach the deploy.** Editing tracked files in this vault
+  produced `launch 2.json` and a second copy of the hero video mid-session. `.gitignore`
+  now excludes `* [0-9].*`, because Workers Builds uploads the whole output folder.
 
 ## Deploy
 
@@ -106,16 +196,13 @@ client already deploys itself** — no manual step.
 shape — `/amenities` 200, `/amenities.html` and `/amenities/` both 307 to it. That was
 measured against production, not assumed. Changing it moves every URL on the site.
 
-**One dashboard setting still has to change before merging this branch:** the Worker's
-Build command must become
-
-```
-npm ci && npm run build
-```
-
-Until then the build has no `dist.nosync` to upload. That fails the Workers Build rather
-than publishing an empty site, so the live site should stay on its last good deployment
-— but it would silently stop updating, so set it first.
+The Worker's Build command must run `npm ci && npm run build` so there is a
+`dist.nosync` to upload. **This is already set** — the Workers Build on `c2f59ac`
+completed with conclusion `success` and the live site serves the Astro output (the
+Webflow "Last Published" comment is gone from production HTML). If a build ever fails
+it uploads nothing rather than publishing an empty site, so the site holds its last
+good deployment — which also means it can silently stop updating. Check the check run,
+not just the live page.
 
 Watch on the first deploy: the custom domain `thepitchstp.com` is attached to the Worker
 in the dashboard. Custom domains are managed separately from `routes` and should survive

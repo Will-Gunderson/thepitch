@@ -6,6 +6,13 @@ Thumbs.db
 .vscode/
 .idea/
 
+# iCloud conflict copies. Editing a tracked file in this vault can leave a sibling
+# named "<name> 2.<ext>"; two appeared during this pass ("launch 2.json" and a second
+# copy of the hero video). They must never be committed — Workers Builds uploads the
+# whole output folder, so a stray "… 2.mp4" would ship to the live site.
+* [0-9].*
+* [0-9]/
+
 # Dependencies
 node_modules/
 
