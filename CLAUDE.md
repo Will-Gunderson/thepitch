@@ -66,8 +66,21 @@ If the file moves, update `path:` in `.pages.yml` **and** the fetch URL in
   highlight because the href never matched the URL. Both fixed by the conversion.
 - **`data-wf-page` is per page and load-bearing** — `thepitch.js` keys its interactions
   off it. It's the `wfPage` prop; don't collapse it to one value.
-- **EliseAI chat fails on localhost** with a CORS error. Expected: their API validates
-  the origin. Not a bug, and it means local element counts run ~10 short of production.
+- **EliseAI is domain-locked, like Buhl's Adobe Fonts kit.** The widget resolves which
+  property it belongs to by calling
+  `app.meetelise.com/platformApi/webchat/microsite_slug?uri=<the page URL>`. On any
+  hostname EliseAI has not registered — localhost, and equally a `*.pages.dev` preview
+  or a staging domain — that lookup is refused (surfacing as a CORS error), `window.eliseAi`
+  is left an empty object, and every `[eliseai]` button silently no-ops because the
+  export's own handlers are guarded with `typeof window.eliseAi.onOpenSST === 'function'`.
+  The chat bubble never renders either: `<me-chat>` mounts with a shadow root and stays
+  0x0.
+  Consequence for cutover: **the chat cannot be tested anywhere except
+  www.thepitchstp.com** unless EliseAI whitelists the test hostname first. Confirmed by
+  comparing the two: live exposes `onOpenSST, onOpenChat, onOpenCallUsWindow,
+  onOpenEmailUsWindow`; localhost exposes none. Both carry the same 3 buttons in markup,
+  so an empty `eliseAi` is an environment symptom, never a markup regression.
+  It also means local element counts run ~10 short of production.
 - `terms-conditions` and `404` now also load `promo-content.js` / `promo-bar.js`, which
   the old export didn't ship there. Both return early when `.promo-bar` is absent, so
   they're inert; the alternative was two more props for no behavioural gain.
