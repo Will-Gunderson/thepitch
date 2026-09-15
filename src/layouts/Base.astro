@@ -105,7 +105,7 @@ body {
     </div>
   )}
 
-  {showPromo && (
+  {showPromo && promo.enabled !== false && (
     <div class="promo-bar">
       <div class="promo-bar-main">
         <div class="promo-headline"><strong>{promo.headline}</strong></div>

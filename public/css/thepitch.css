@@ -6511,9 +6511,13 @@ figcaption {
 .promo-info .paragraph-2, .promo-info .paragraph-2 strong { font-family: Sulsans, sans-serif; font-weight: 700; }
 
 
-/* --- Promo bar: hidden until content is loaded by js/promo-content.js (prevents flash) --- */
-.promo-bar { visibility: hidden; }
-.promo-bar.promo-ready { visibility: visible; }
+/* --- Promo bar: visible on first paint ---
+   This used to be `visibility: hidden` until promo-content.js had fetched
+   content/promo.json, back when the markup held a hand-kept copy that could be
+   stale. The markup is now rendered from that same JSON at build time, so the
+   correct copy is in the HTML before any script runs — hiding it only produced a
+   blank strip that popped in a moment later. The dropdown stays collapsed via
+   height: 0 below, so first paint is just the 40px headline row. */
 
 
 /* --- Cookie consent banner (brand-styled) --- */

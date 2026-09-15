@@ -1,6 +1,9 @@
-/* The Pitch - loads editable promo copy from content/promo.json (managed via Pages CMS).
-   The page's inline promo text is the fallback; this overwrites it before revealing,
-   so there is no flash and nothing breaks if the fetch fails. */
+/* The Pitch - refreshes the promo bar from content/promo.json (managed via Pages CMS).
+   The bar is already server-rendered from this same file at build time, so this is a
+   top-up, not the source of truth: it catches an edit made after the last build, e.g.
+   while an HTML response is still cached at the edge. It no longer reveals the bar —
+   that caused a visible flash on every page load — so if the fetch fails, the
+   build-time copy simply stands. */
 (function () {
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function apply(bar, d) {
@@ -17,7 +20,6 @@
       var cta = bar.querySelector('.promo-info .button .text-block');
       if (cta && d.cta_label != null) cta.textContent = d.cta_label;
     }
-    bar.classList.add('promo-ready');   // reveal
   }
   function init() {
     var bars = document.querySelectorAll('.promo-bar');

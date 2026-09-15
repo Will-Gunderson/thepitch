@@ -41,8 +41,15 @@ That file is read **twice, on purpose**:
 2. `/js/promo-content.js` re-fetches `/content/promo.json` at runtime and overwrites
    the markup, so an edit lands even on an HTML response cached at the edge.
 
-Keep both. Dropping the fetch makes edits wait on a rebuild; dropping the build-time
-render brings back the hand-maintained duplicate that could drift from the JSON.
+Keep both, but note which is authoritative: **the build-time render is**. The fetch is a
+top-up for an edit made since the last build. It must never gate visibility — the bar was
+originally `visibility: hidden` until the fetch resolved, which showed a blank strip that
+popped in on every page load. The bar now paints with the page.
+
+When `enabled` is false the bar is not emitted at all, rather than emitted and hidden by
+script. The gap that leaves: if a CMS edit flips `enabled` from false to true, the bar
+cannot appear until the rebuild lands, because there is no element for the fetch to fill.
+Workers Builds deploys on the CMS commit, so that window is about a minute.
 
 If the file moves, update `path:` in `.pages.yml` **and** the fetch URL in
 `promo-content.js`. `media.input` in `.pages.yml` is `public/images` (repo path) while
