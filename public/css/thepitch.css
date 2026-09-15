@@ -6525,3 +6525,53 @@ figcaption {
 img {
   height: auto;
 }
+
+
+/* --- Sliders: one slide height, everywhere ---
+   Slide height used to follow whatever was inside it, so advancing a slider moved the
+   card's bottom edge. Two causes, measured on production: the photos ran 1.49 to 1.89
+   in aspect ratio (the amenities slider swung 271px to 344px on a 512px-wide slide),
+   and on the homepage the captions wrap to a different number of lines.
+
+   Fix 1 — every slide photo is boxed at 3:2 and cropped to fill. 3:2 is the ratio the
+   library already clusters on (1.489-1.555 for all but one), so the crop is a few
+   percent on almost every image; only Pitch_010v2 at 1.888 loses a real amount, off
+   the sides, which a centred interior shot takes well.
+
+   Scoped to `.w-slide` on purpose: the amenities lightbox includes a portrait image
+   (Pitch_009, 801x1200) and must keep its own shape. Don't widen these selectors. */
+.w-slide .slide-image,
+.w-slide .slider-image,
+.w-slide .card > img {
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Fix 2 — the homepage cards sit under the photo rather than over it, so caption length
+   still moved the bottom edge (204px vs 180px, one extra wrapped line). A floor on the
+   body absorbs that; longer copy can still grow it, and all three grow together. */
+.w-slide .card-body {
+  min-height: 204px;
+}
+
+/* Fix 3 — below 768px the amenities/gallery caption stops being an overlay and sits
+   in flow under the photo (`.slide-caption` goes position: relative at 767 and again
+   at 479), so caption length drives slide height again: the club-room caption wrapped
+   to three lines where the others take two, and the slider jumped 22px — exactly one
+   22px line of .small-text. Reserving three lines makes every caption occupy the same
+   box. Keep this in step with .small-text's line-height if that ever changes. */
+@media screen and (max-width: 767px) {
+  .slide-caption .small-text {
+    min-height: 66px; /* 3 x 22px line-height */
+  }
+
+  /* Same story on the floor-plan sliders: below 768 the overlay box drops into flow
+     (position: relative at 767, and its desktop min-height: 360px became auto at 991),
+     so the unit blurb drives height — "408 SF / Available with balcony" takes two lines
+     where "382 SF" takes one, a 24px step. Note some entries are "523 SF<br>" with a
+     trailing break, which already renders two lines; reserving two evens all of them. */
+  .slider .text-block-10 {
+    min-height: 48px; /* 2 x 24px line-height */
+  }
+}
