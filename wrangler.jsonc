@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thepitch",
+  "compatibility_date": "2026-09-11",
+  "assets": {
+    // Astro writes here, not ./dist — the repo is in iCloud and a folder rewritten
+    // on every build becomes conflict copies. Must match `outDir` in astro.config.mjs.
+    "directory": "./dist.nosync",
+    "not_found_handling": "404-page",
+    // Reproduces what the site already serves: /amenities is 200, while
+    // /amenities.html and /amenities/ both 307 to it. Verified against production
+    // before this file existed. Changing it moves every URL on the site.
+    "html_handling": "drop-trailing-slash"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

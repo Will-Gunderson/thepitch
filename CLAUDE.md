@@ -85,22 +85,32 @@ If the file moves, update `path:` in `.pages.yml` **and** the fetch URL in
   the old export didn't ship there. Both return early when `.promo-bar` is absent, so
   they're inert; the alternative was two more props for no behavioural gain.
 
-## Deploy — UNRESOLVED, read before merging
+## Deploy
 
-`main` currently holds flat HTML at the repo root and whatever deploys the site
-expects exactly that, with **no build step**. This branch moves the HTML into
-`src/` and only produces it after `npm run build`.
+Cloudflare **Worker** named `thepitch` (not a Pages project — `wrangler pages project
+list` does not show it, which is what made this hard to find). Workers Builds is
+connected to this repo through the "Cloudflare Workers and Pages" GitHub App, so every
+push to `main` builds and deploys. Confirmed: the Pages CMS commit `a803177` carries a
+`Workers Builds: thepitch` check run with conclusion `success`, so **a promo edit by the
+client already deploys itself** — no manual step.
 
-**Merging without reconfiguring the deploy will take the live site down.**
+`wrangler.jsonc` now pins the parts that belong in the repo: the assets directory
+(`dist.nosync`) and `html_handling: drop-trailing-slash`, which reproduces the live URL
+shape — `/amenities` 200, `/amenities.html` and `/amenities/` both 307 to it. That was
+measured against production, not assumed. Changing it moves every URL on the site.
 
-The deploy target has not been identified. It is not a Cloudflare Pages project or a
-Worker under `hello@willgunderson.com` — that account shows only `willgunderson`
-(pages.dev, 2 years old). Check other Cloudflare accounts, then the repo's GitHub
-webhooks. Once found it needs:
+**One dashboard setting still has to change before merging this branch:** the Worker's
+Build command must become
 
-- build command: `npm ci && npm run build`
-- output directory: `dist.nosync`
+```
+npm ci && npm run build
+```
 
-Pages CMS keeps working either way — it commits JSON to the repo and doesn't care how
-the site is built — but the `path:` values in `.pages.yml` are already updated for the
-new layout, so CMS and site must ship together.
+Until then the build has no `dist.nosync` to upload. That fails the Workers Build rather
+than publishing an empty site, so the live site should stay on its last good deployment
+— but it would silently stop updating, so set it first.
+
+Watch on the first deploy: the custom domain `thepitchstp.com` is attached to the Worker
+in the dashboard. Custom domains are managed separately from `routes` and should survive
+a `wrangler deploy` that does not declare any, but this has not been exercised here —
+check the domain still resolves right after the first build.
